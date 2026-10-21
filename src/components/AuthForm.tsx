@@ -15,7 +15,10 @@ export default function AuthForm({ mode, next }: { mode: "login" | "signup"; nex
         <input id="email" name="email" type="email" required autoComplete="email" className="input py-2.5" />
       </div>
       <div>
-        <label htmlFor="password" className="label">Password</label>
+        <div className="flex items-baseline justify-between">
+          <label htmlFor="password" className="label">Password</label>
+          {mode === "login" && <Link href="/forgot-password" className="text-xs text-muted underline">Forgot password?</Link>}
+        </div>
         <input id="password" name="password" type="password" required minLength={8}
           autoComplete={mode === "login" ? "current-password" : "new-password"} className="input py-2.5" />
       </div>

@@ -1,10 +1,12 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createSession, currentUser, destroySession, newApiKey } from "./auth";
+import { createSession, currentUser, destroySession, newApiKey, sha256 } from "./auth";
 import { db } from "./db";
+import { emailEnabled, sendEmail } from "./email";
 import { planFor, priceIdFor, type PlanId } from "./plans";
 import { site } from "./site";
 import { stripe } from "./stripe";
@@ -35,6 +37,43 @@ export async function login(_: FormState, form: FormData): Promise<FormState> {
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) return { error: "Wrong email or password." };
   await createSession(user.id);
   redirect(safeNext(form.get("next")));
+}
+
+export async function requestPasswordReset(_: FormState, form: FormData): Promise<FormState & { sent?: boolean }> {
+  if (!emailEnabled()) return { error: `Password reset by email isn't available yet. Email ${site.supportEmail} and we'll help you.` };
+  const email = String(form.get("email") ?? "").trim().toLowerCase();
+  const user = await db.user.findUnique({ where: { email } });
+  // Same answer whether or not the account exists, so this can't be used to discover emails.
+  if (!user) return { sent: true };
+  const recent = await db.passwordReset.findFirst({
+    where: { userId: user.id, createdAt: { gte: new Date(Date.now() - 2 * 60 * 1000) } },
+  });
+  if (recent) return { sent: true };
+  const token = randomBytes(32).toString("base64url");
+  await db.passwordReset.create({ data: { userId: user.id, tokenHash: sha256(token), expiresAt: new Date(Date.now() + 60 * 60 * 1000) } });
+  const link = `${site.url}/reset-password?token=${token}`;
+  await sendEmail(
+    user.email,
+    `Reset your ${site.name} password`,
+    `<p>Someone asked to reset the password for your ${site.name} account.</p>
+<p><a href="${link}">Choose a new password</a> (this link works for 1 hour).</p>
+<p>If this wasn't you, you can ignore this email.</p>`,
+  );
+  return { sent: true };
+}
+
+export async function resetPassword(_: FormState, form: FormData): Promise<FormState> {
+  const token = String(form.get("token") ?? "");
+  const password = String(form.get("password") ?? "");
+  if (password.length < 8) return { error: "Use at least 8 characters for your password." };
+  const reset = await db.passwordReset.findUnique({ where: { tokenHash: sha256(token) } });
+  if (!reset || reset.usedAt || reset.expiresAt < new Date()) return { error: "This link has expired. Request a new one." };
+  await db.$transaction([
+    db.user.update({ where: { id: reset.userId }, data: { passwordHash: await bcrypt.hash(password, 12) } }),
+    db.passwordReset.updateMany({ where: { userId: reset.userId, usedAt: null }, data: { usedAt: new Date() } }),
+  ]);
+  await createSession(reset.userId);
+  redirect("/dashboard");
 }
 
 export async function logout() {
