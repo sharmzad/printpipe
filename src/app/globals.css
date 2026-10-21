@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f7f5f0;
+  --color-card: #ffffff;
+  --color-ink: #16171d;
+  --color-muted: #5d6070;
+  --color-line: #e4e1d8;
+  --color-accent: #e0482b;
+  --color-accent-dark: #b9351c;
+  --color-accent-soft: #fde9e3;
+  --font-sans: var(--font-body-face), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display-face), ui-serif, Georgia, serif;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background-color 150ms, border-color 150ms;
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+@utility btn-primary {
+  @apply btn bg-accent text-white hover:bg-accent-dark;
+}
+@utility btn-ink {
+  @apply btn bg-ink text-white hover:bg-black;
+}
+@utility btn-ghost {
+  @apply btn border border-line bg-card hover:border-ink;
+}
+@utility input {
+  @apply w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-ink focus:ring-2 focus:ring-ink/10;
+}
+@utility label {
+  @apply mb-1 block text-sm font-medium;
+}
+
+.prose-simple h2 {
+  @apply mt-10 mb-3 font-display text-2xl;
+}
+.prose-simple p {
+  @apply mb-4 leading-relaxed text-muted;
+}
+.prose-simple ul {
+  @apply mb-4 list-disc pl-6 text-muted;
+}
