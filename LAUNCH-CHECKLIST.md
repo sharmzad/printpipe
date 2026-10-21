@@ -10,18 +10,16 @@ Live site (test payments): https://printpipe-production.up.railway.app
 
 ## Your steps (I can't do these)
 
-### 1. Stripe live mode (about 10 minutes)
-A safety check stopped me from changing your **live** Stripe account while you were away. Either tell me "go ahead with live Stripe" and I'll do a–c, or do them yourself:
+### 1. Switch the site to live Stripe (5 minutes)
+Already done in your **live** Stripe account: the products PrintPipe Pro ($9/mo) and PrintPipe Business ($29/mo), the webhook `printpipe-subscriptions-live` (same URL, 4 events), and the Customer Portal (cancel and switch plans, both products).
 
-a. Switch the dashboard to **live mode** → Product catalogue → create **PrintPipe Pro** ($9.00 USD, recurring, monthly) and **PrintPipe Business** ($29.00, monthly). Copy both `price_...` IDs.
-b. Developers → Webhooks → add a destination: URL `https://printpipe-production.up.railway.app/api/stripe/webhook`, events `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`.
-c. Settings → Billing → Customer portal (live): turn on cancellations and "Customers can switch plans", add both products, then Save.
-d. In Railway → printpipe → Variables, replace **all four at once**, then click **Deploy**:
-   - `STRIPE_SECRET_KEY` → your `sk_live_...` key
-   - `STRIPE_WEBHOOK_SECRET` → the live webhook's `whsec_...`
-   - `STRIPE_PRICE_PRO` / `STRIPE_PRICE_BUSINESS` → the live price IDs
+In Railway → printpipe → Variables, change **all four** and then click **Deploy**:
+- `STRIPE_PRICE_PRO` → `price_1USyyvP94Xeed99eeVIMJs3J`
+- `STRIPE_PRICE_BUSINESS` → `price_1USyzyP94Xeed99eyhkl69kp`
+- `STRIPE_SECRET_KEY` → your `sk_live_...` key (Stripe, live mode → Developers → API keys)
+- `STRIPE_WEBHOOK_SECRET` → the `whsec_...` of the **live** webhook `printpipe-subscriptions-live` (Developers → Webhooks → it → Signing secret)
 
-   Mixing test and live values breaks checkout, so change all four together.
+Mixing test and live values breaks checkout, so change all four together. After you switch, the test accounts on the site are still Pro in the database, but they have no live subscription.
 
 ### 2. Railway Hobby plan ($5/month)
 Railway → Account → Plans. The trial credit runs out after 30 days or $5, and then the site and Gotenberg stop.
