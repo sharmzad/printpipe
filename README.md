@@ -28,6 +28,10 @@ Set `NEXT_PUBLIC_GA_ID` (G-…) and `NEXT_PUBLIC_GOOGLE_ADS_ID` (AW-…). In Goo
 
 Good ad landing pages are the tool pages, e.g. `/tools/word-to-pdf` for "word to pdf converter" keywords. Visitors can use a tool right away without signing up.
 
+## License
+
+[AGPL-3.0](LICENSE). If you run a modified version of PrintPipe as a network service, you must publish your source code under the same license.
+
 ## Local development
 
 ```bash
