@@ -139,10 +139,11 @@ export async function buildGotenbergForm(tool: Tool, input: FormData) {
   return { form: out, bytes };
 }
 
-export async function callGotenberg(tool: Tool, form: FormData) {
+export async function callGotenberg(tool: Tool, form: FormData, requestId?: string) {
   const base = process.env.GOTENBERG_URL;
   if (!base) throw new Error("GOTENBERG_URL is not set");
   const headers: Record<string, string> = { "Gotenberg-Output-Filename": `printpipe-${tool.slug}` };
+  if (requestId) headers["Gotenberg-Trace"] = requestId;
   if (process.env.GOTENBERG_USERNAME) {
     const token = Buffer.from(`${process.env.GOTENBERG_USERNAME}:${process.env.GOTENBERG_PASSWORD ?? ""}`).toString("base64");
     headers.Authorization = `Basic ${token}`;

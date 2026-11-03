@@ -52,12 +52,14 @@ export function sha256(value: string) {
 }
 
 export function newApiKey() {
-  const key = `pp_live_${randomBytes(24).toString("base64url")}`;
+  const configuredPrefix = process.env.API_KEY_PREFIX || "pp_live_";
+  const prefix = /^pp_(live|test)_$/.test(configuredPrefix) ? configuredPrefix : "pp_live_";
+  const key = `${prefix}${randomBytes(24).toString("base64url")}`;
   return { key, prefix: key.slice(0, 12), hash: sha256(key) };
 }
 
 export async function userFromApiKey(header: string | null) {
-  const key = header?.match(/^Bearer\s+(pp_live_\S+)$/i)?.[1];
+  const key = header?.match(/^Bearer\s+(pp_(?:live|test)_\S+)$/i)?.[1];
   if (!key) return null;
   const apiKey = await db.apiKey.findUnique({ where: { hash: sha256(key) }, include: { user: true } });
   if (!apiKey) return null;
