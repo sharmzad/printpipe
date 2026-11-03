@@ -8,6 +8,7 @@
     "build": "prisma generate && next build",
     "start": "prisma migrate deploy && next start -p ${PORT:-3000}",
     "typecheck": "tsc --noEmit",
+    "smoke:api": "node scripts/api-smoke-test.mjs",
     "db:migrate": "prisma migrate dev",
     "stripe:setup": "node scripts/stripe-setup.mjs"
   },
